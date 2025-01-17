@@ -37,6 +37,11 @@ variable "infrastructure_support" {
   type        = string
 }
 
+variable "kubernetes_cluster" {
+  description = "The name of the Kubernetes cluster"
+  type        = string
+}
+
 # application_insights_instance should be set to one of:
 # "dev" (appears as t3 in azure portal) or "preprod" or "prod".
 # This determines which instance of application insights metrics and logs are sent to.
