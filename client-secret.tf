@@ -7,7 +7,7 @@ resource "kubernetes_secret" "client_secret" {
   }
   data = {
     # Initial value for the client credentials
-    API_CLIENT_ID = ""
+    API_CLIENT_ID     = ""
     API_CLIENT_SECRET = ""
   }
   lifecycle {
