@@ -7,11 +7,6 @@
 ########
 # Tags #
 ########
-variable "business_unit" {
-  description = "Area of the MOJ responsible for the service"
-  type        = string
-}
-
 variable "application" {
   description = "Application name"
   type        = string
@@ -32,7 +27,7 @@ variable "namespace" {
   type        = string
 }
 
-variable "environment_name" {
+variable "environment" {
   description = "Environment name"
   type        = string
 }
