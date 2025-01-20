@@ -28,7 +28,7 @@ variable "namespace" {
 }
 
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name - must match environment names used in helm files."
   type        = string
 }
 
