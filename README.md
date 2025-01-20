@@ -76,7 +76,7 @@ See the [examples/](examples/) folder for more information.
 |------|-------------|------|---------|:--------:|
 | <a name="input_application"></a> [application](#input\_application) | Application name | `string` | n/a | yes |
 | <a name="input_application_insights_instance"></a> [application\_insights\_instance](#input\_application\_insights\_instance) | Determines which instrumentation key to use for Application Insights. | `string` | n/a | yes |
-| <a name="input_environment"></a> [environment](#input\_environment) | Environment name | `string` | n/a | yes |
+| <a name="input_environment"></a> [environment](#input\_environment) | Environment name - must match environment names used in helm files. | `string` | n/a | yes |
 | <a name="input_github_owner"></a> [github\_owner](#input\_github\_owner) | The GitHub organization or individual user account containing the app's code repo. Used by the Github Terraform provider. See: https://user-guide.cloud-platform.service.justice.gov.uk/documentation/getting-started/ecr-setup.html#accessing-the-credentials | `string` | `"ministryofjustice"` | no |
 | <a name="input_github_repo"></a> [github\_repo](#input\_github\_repo) | The name of the GitHub repository where the source code for the app is stored | `any` | n/a | yes |
 | <a name="input_github_team"></a> [github\_team](#input\_github\_team) | The name of the GitHub team that will be added as reviewers to the repository | `any` | n/a | yes |
@@ -91,7 +91,9 @@ See the [examples/](examples/) folder for more information.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_application"></a> [application](#output\_application) | The name of the application (can be used in dependent modules/resources.) |
 <!-- END_TF_DOCS -->
 
 ## Tags
