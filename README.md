@@ -37,7 +37,6 @@ module "template" {
   namespace                     = var.namespace
   github_token                  = var.github_token
   kubernetes_cluster            = var.kubernetes_cluster
-  business_unit                 = var.business_unit
   application                   = var.application
   is_production                 = var.is_production
 }

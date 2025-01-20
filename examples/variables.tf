@@ -1,15 +1,3 @@
-variable "business_unit" {
-  description = "Area of the MOJ responsible for the service"
-  type        = string
-  default     = "Platforms"
-}
-
-variable "application" {
-  description = "Application name"
-  type        = string
-  default     = "cloud-platform-terraform-template example module"
-}
-
 variable "is_production" {
   description = "Whether this is used for production or not"
   type        = string
@@ -22,9 +10,21 @@ variable "namespace" {
   default     = "cloud-platform-terraform-template-example-module"
 }
 
-variable "environment_name" {
+variable "environment" {
   description = "Environment name"
   type        = string
   default     = "non-production"
 }
 
+variable "github_token" {
+  description = "GitHub token"
+  type        = string
+  default     = "cloud-platform-terraform-template-example-module"
+}
+
+variable "kubernetes_cluster" {
+  description = "Kubernetes cluster name"
+  type        = string
+  default     = "cloud-platform-terraform-template-example-module"
+
+}

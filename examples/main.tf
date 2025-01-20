@@ -4,8 +4,8 @@ module "hmpps_template_typescript" {
   github_repo                   = "hmpps-template-typescript"
   application                   = "hmpps-template-typescript"
   github_team                   = "hmpps-sre"
-  environment                   = "dev" # Should match environment name used in helm values file e.g. values-dev.yaml
-  is_production                 = "true"
+  environment                   = var.environment # Should match environment name used in helm values file e.g. values-dev.yaml
+  is_production                 = var.is_production
   application_insights_instance = "dev" # Either "dev", "preprod" or "prod"
   source_template_repo          = "hmpps-template-typescript"
   github_token                  = var.github_token
@@ -19,8 +19,8 @@ module "hmpps_template_kotlin" {
   github_repo                   = "hmpps-template-kotlin"
   application                   = "hmpps-template-kotlin"
   github_team                   = "hmpps-sre"
-  environment                   = "dev" # Should match environment name used in helm values file e.g. values-dev.yaml
-  is_production                 = "true"
+  environment                   = var.environment # Should match environment name used in helm values file e.g. values-dev.yaml
+  is_production                 = var.is_production
   application_insights_instance = "dev" # Either "dev", "preprod" or "prod"
   source_template_repo          = "hmpps-template-kotlin"
   github_token                  = var.github_token
