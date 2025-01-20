@@ -2,7 +2,24 @@
 
 [![Releases](https://img.shields.io/github/v/release/ministryofjustice/cloud-platform-terraform-template.svg)](https://github.com/ministryofjustice/cloud-platform-terraform-template/releases)
 
-This Terraform module will _create a ..._ for use on the Cloud Platform.
+This Terraform module will create the basic resources needed for the successful deployment of HMPPS template applications, either hmpps-template-kotlin or hmpps-template-typescript.
+
+It will setup the following required resources:
+- Kubernetes service account for github actions deployments.
+- Setup of github actions environments.
+- Export the service account credentials to github actions environments.
+- Automatically rotate service account credentials every week.
+- Setup Azure Applications Insights instrumentation key, saved to a Kubernetes secret.
+- Setup sessions secret (for typescript apps),saved to a Kubernetes secret.
+- Setup empty client credentials for hmpps-auth integration, saved to a Kubernetes secret.
+
+**NOTE**: this module does not setup other resources such as RDS/S3/ElastiCache/SQS/SNS - these need to be configured on a per need basis within the cloud-platform-environments repo.
+
+It is recommended that the output variable _application_ of this module is used to create dependencies between this module and any dependent resources. e.g.
+
+```hcl
+application = module.hmpps_template_typescript.application
+```
 
 ## Usage
 
@@ -11,16 +28,18 @@ module "template" {
   source = "github.com/ministryofjustice/cloud-platform-terraform-template?ref=version" # use the latest release
 
   # Configuration
-  # ...
-
-  # Tags
-  business_unit          = var.business_unit
-  application            = var.application
-  is_production          = var.is_production
-  team_name              = var.team_name
-  namespace              = var.namespace
-  environment_name       = var.environment
-  infrastructure_support = var.infrastructure_support
+  github_repo                   = "hmpps-template-typescript"
+  application                   = "hmpps-template-typescript"
+  github_team                   = "hmpps-sre"
+  environment                   = var.environment # Should match names in helm files.
+  application_insights_instance = "dev" # Either "dev", "preprod" or "prod"
+  source_template_repo          = "hmpps-template-typescript"
+  namespace                     = var.namespace
+  github_token                  = var.github_token
+  kubernetes_cluster            = var.kubernetes_cluster
+  business_unit                 = var.business_unit
+  application                   = var.application
+  is_production                 = var.is_production
 }
 ```
 
@@ -87,7 +106,6 @@ See the [examples/](examples/) folder for more information.
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Namespace name | `string` | n/a | yes |
 | <a name="input_serviceaccount_name"></a> [serviceaccount\_name](#input\_serviceaccount\_name) | The name of the service account to be created | `string` | `"github-actions-sa"` | no |
 | <a name="input_source_template_repo"></a> [source\_template\_repo](#input\_source\_template\_repo) | The source template repository used for this app. | `any` | n/a | yes |
-| <a name="input_team_name"></a> [team\_name](#input\_team\_name) | Team name | `string` | n/a | yes |
 
 ## Outputs
 

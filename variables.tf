@@ -17,11 +17,6 @@ variable "is_production" {
   type        = string
 }
 
-variable "team_name" {
-  description = "Team name"
-  type        = string
-}
-
 variable "namespace" {
   description = "Namespace name"
   type        = string
@@ -29,11 +24,6 @@ variable "namespace" {
 
 variable "environment" {
   description = "Environment name - must match environment names used in helm files."
-  type        = string
-}
-
-variable "infrastructure_support" {
-  description = "The team responsible for managing the infrastructure. Should be of the form <team-name> (<team-email>)"
   type        = string
 }
 
