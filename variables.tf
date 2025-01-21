@@ -63,11 +63,6 @@ variable "github_token" {
   description = "Required by the GitHub Terraform provider"
 }
 
-variable "serviceaccount_name" {
-  description = "The name of the service account to be created"
-  default     = "github-actions-sa"
-}
-
 variable "source_template_repo" {
   description = "The source template repository used for this app."
   validation {

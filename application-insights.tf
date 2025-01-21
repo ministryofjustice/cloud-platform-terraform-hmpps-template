@@ -6,6 +6,9 @@ resource "kubernetes_secret" "application-insights" {
   metadata {
     name      = "${var.application}-application-insights"
     namespace = var.namespace
+    annotations = {
+      "app.kubernetes.io/managed-by" = "terraform"
+    }
   }
   data = {
     APPINSIGHTS_INSTRUMENTATIONKEY        = data.aws_ssm_parameter.application_insights_key.value

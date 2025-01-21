@@ -11,6 +11,9 @@ resource "kubernetes_secret" "session_secret" {
   metadata {
     name      = "${var.application}-session-secret"
     namespace = var.namespace
+    annotations = {
+      "app.kubernetes.io/managed-by" = "terraform"
+    }
   }
   data = {
     SESSION_SECRET = random_password.session_secret.result
