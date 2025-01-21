@@ -1,7 +1,7 @@
 # Create a secret with a blank value that is not managed by terraform,
 # this will enabled the application to startup.
 # Note: the hmpps-auth team will update this secret with the correct values
-resource "kubernetes_secret" "client_creds" {
+resource "kubernetes_secret" "kotlin_client_creds" {
   count = var.source_template_repo == "hmpps-template-kotlin" ? 1 : 0
   metadata {
     name      = "${var.application}-client-creds"
