@@ -66,7 +66,7 @@ variable "github_token" {
 variable "source_template_repo" {
   description = "The source template repository used for this app."
   validation {
-    condition     = contains(["hmpps-template-kotlin", "hmpps-template-typescript"], var.source_template_repo)
+    condition     = contains(["hmpps-template-kotlin", "hmpps-template-typescript", "none"], var.source_template_repo)
     error_message = "Valid values for source_template_repo are: hmpps-template-kotlin or hmpps-template-typescript."
   }
 }
