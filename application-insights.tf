@@ -3,6 +3,7 @@ data "aws_ssm_parameter" "application_insights_key" {
 }
 
 resource "kubernetes_secret" "application-insights" {
+  count = contains(["hmpps-template-kotlin", "hmpps-template-typescript"], var.source_template_repo) ? 1 : 0
   metadata {
     name      = "${var.application}-application-insights"
     namespace = var.namespace
