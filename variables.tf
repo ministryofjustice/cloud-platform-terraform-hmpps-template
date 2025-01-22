@@ -38,6 +38,7 @@ variable "kubernetes_cluster" {
 variable "application_insights_instance" {
   description = "Determines which instrumentation key to use for Application Insights."
   type        = string
+  default     = "dev"
   validation {
     condition     = contains(["dev", "preprod", "prod"], var.application_insights_instance)
     error_message = "Valid values for application_insights_instance are: dev, preprod or prod."
