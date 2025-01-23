@@ -24,25 +24,30 @@ application = module.hmpps_template_typescript.application
 ## Usage
 
 ```hcl
-module "template" {
-  source = "github.com/ministryofjustice/cloud-platform-terraform-template?ref=version" # use the latest release
-
-  # Configuration
-  github_repo                   = "hmpps-template-typescript"
-  application                   = "hmpps-template-typescript"
+module "dev_env" {
+  source = "github.com/ministryofjustice/cloud-platform-terraform-template?ref=x.x.x" # use the latest release
+  github_repo                   = "hmpps-template-kotlin"
+  application                   = "hmpps-template-kotlin"
   github_team                   = "hmpps-sre"
-  environment                   = var.environment # Should match names in helm files.
-  application_insights_instance = "dev" # Either "dev", "preprod" or "prod"
-  source_template_repo          = "hmpps-template-typescript"
-  namespace                     = var.namespace
-  github_token                  = var.github_token
-  kubernetes_cluster            = var.kubernetes_cluster
-  application                   = var.application
+  environment                   = var.environment # Should match environment name used in helm values file e.g. values-dev.yaml
+  reviewer_teams                = ["hmpps-dev-team-1", "hmpps-dev-team-2"]
+  selected_branch_patterns      = ["main", "release/*", "feature/*"]
   is_production                 = var.is_production
+  application_insights_instance = "dev" # Either "dev", "preprod" or "prod"
+  source_template_repo          = "hmpps-template-kotlin"
+  github_token                  = var.github_token
+  namespace                     = var.namespace
+  kubernetes_cluster            = var.kubernetes_cluster
 }
 ```
 
 See the [examples/](examples/) folder for more information.
+
+Notes:
+- `reviewer_teams` is mandatory for production environment (is_production = "true")
+- `selected_branch_patterns` is an optional parameter, must contain a list of patterns.
+- If `selected_branch_patterns` is not set, then the default is to enable `protected_branches_only`. This means you can only deploy to this environment from branches that have protection enabled.
+- You can set `protected_branches_only = false` - but this has to be done consciously and for good reason.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -51,7 +56,7 @@ See the [examples/](examples/) folder for more information.
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2.5 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.0.0 |
-| <a name="requirement_github"></a> [github](#requirement\_github) | ~> 5.39.0 |
+| <a name="requirement_github"></a> [github](#requirement\_github) | ~> 6.5.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.0.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.6.0 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.9.0 |
@@ -61,7 +66,7 @@ See the [examples/](examples/) folder for more information.
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.0.0 |
-| <a name="provider_github"></a> [github](#provider\_github) | ~> 5.39.0 |
+| <a name="provider_github"></a> [github](#provider\_github) | ~> 6.5.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >= 2.0.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.6.0 |
 | <a name="provider_time"></a> [time](#provider\_time) | ~> 0.9.0 |
@@ -78,6 +83,7 @@ See the [examples/](examples/) folder for more information.
 |------|------|
 | [github_actions_environment_variable.namespace_env_var](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/actions_environment_variable) | resource |
 | [github_repository_environment.env](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_environment) | resource |
+| [github_repository_environment_deployment_policy.env](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_environment_deployment_policy) | resource |
 | [kubernetes_secret.application-insights](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
 | [kubernetes_secret.kotlin_client_creds](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
 | [kubernetes_secret.session_secret](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
@@ -86,7 +92,7 @@ See the [examples/](examples/) folder for more information.
 | [random_password.session_secret](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [time_rotating.weekly](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating) | resource |
 | [aws_ssm_parameter.application_insights_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
-| [github_team.hmpps_dev_team](https://registry.terraform.io/providers/integrations/github/latest/docs/data-sources/team) | data source |
+| [github_team.teams](https://registry.terraform.io/providers/integrations/github/latest/docs/data-sources/team) | data source |
 
 ## Inputs
 
@@ -102,6 +108,10 @@ See the [examples/](examples/) folder for more information.
 | <a name="input_is_production"></a> [is\_production](#input\_is\_production) | Whether this is used for production or not | `string` | n/a | yes |
 | <a name="input_kubernetes_cluster"></a> [kubernetes\_cluster](#input\_kubernetes\_cluster) | The name of the Kubernetes cluster | `string` | n/a | yes |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Namespace name | `string` | n/a | yes |
+| <a name="input_prevent_self_review"></a> [prevent\_self\_review](#input\_prevent\_self\_review) | Whether to prevent self-review of deployments to this environment | `bool` | `false` | no |
+| <a name="input_protected_branches_only"></a> [protected\_branches\_only](#input\_protected\_branches\_only) | Whether to enabled deployments to this environment from protected branches only | `bool` | `true` | no |
+| <a name="input_reviewer_teams"></a> [reviewer\_teams](#input\_reviewer\_teams) | The GitHub team(s) that will be added as reviewers for deploying to this environment. | `list(string)` | `[]` | no |
+| <a name="input_selected_branch_patterns"></a> [selected\_branch\_patterns](#input\_selected\_branch\_patterns) | A list of patterns to match against branch names for deployment policies | `list(string)` | `[]` | no |
 | <a name="input_source_template_repo"></a> [source\_template\_repo](#input\_source\_template\_repo) | The source template repository used for this app. | `any` | n/a | yes |
 
 ## Outputs
