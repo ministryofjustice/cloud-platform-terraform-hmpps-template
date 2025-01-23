@@ -43,7 +43,7 @@ module "dev_env" {
 
 See the [examples/](examples/) folder for more information.
 
-Notes: 
+Notes:
 - `reviewer_teams` is mandatory for production environment (is_production = "true")
 - `selected_branch_patterns` is an optional parameter, must contain a list of patterns.
 - If `selected_branch_patterns` is not set, then the default is to enable `protected_branches_only`. This means you can only deploy to this environment from branches that have protection enabled.
