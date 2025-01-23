@@ -108,6 +108,13 @@ resource "github_repository_environment" "env" {
     custom_branch_policies = length(var.selected_branch_patterns) > 0 ? true : false
   }
   prevent_self_review = var.prevent_self_review
+
+  lifecycle {
+    precondition {
+      condition     = is_production == "true" ? length(var.reviewer_teams) > 0 : true
+      error_message = "Reviewer teams must be specified for production environments."
+    }
+  }
 }
 
 resource "github_repository_environment_deployment_policy" "env" {

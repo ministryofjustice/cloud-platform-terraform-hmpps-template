@@ -88,10 +88,6 @@ variable "reviewer_teams" {
   description = "The GitHub team(s) that will be added as reviewers for deploying to this environment."
   type        = list(string)
   default     = []
-  validation {
-    condition     = is_production == "true" ? length(var.reviewer_teams) > 0 : true
-    error_message = "Reviewer teams must be specified for production environments."
-  }
 }
 
 variable "prevent_self_review" {
