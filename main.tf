@@ -101,7 +101,7 @@ resource "github_repository_environment" "env" {
   environment = var.environment
   repository  = var.github_repo
   reviewers {
-    teams = [for team in github_team.teams : team.id]
+    teams = [for team in data.github_team.teams : team.id]
   }
   deployment_branch_policy {
     protected_branches     = length(var.selected_branch_patterns) > 0 ? false : var.protected_branches_only
@@ -111,7 +111,7 @@ resource "github_repository_environment" "env" {
 
   lifecycle {
     precondition {
-      condition     = is_production == "true" ? length(var.reviewer_teams) > 0 : true
+      condition     = var.is_production == "true" ? length(var.reviewer_teams) > 0 : true
       error_message = "Reviewer teams must be specified for production environments."
     }
   }
