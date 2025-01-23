@@ -91,7 +91,7 @@ resource "time_rotating" "weekly" {
 ### then add the variable name to the teams list below                 ###
 
 data "github_team" "teams" {
-  for_each = var.protected_reviewer_teams
+  for_each = toset(var.reviewer_teams)
   slug     = each.value
 }
 
