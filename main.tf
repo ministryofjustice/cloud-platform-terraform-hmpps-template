@@ -90,8 +90,9 @@ resource "time_rotating" "weekly" {
 ### Copy these three lines and change accordingly for your github team ###
 ### then add the variable name to the teams list below                 ###
 
-data "github_team" "hmpps_dev_team" {
-  slug = var.github_team
+data "github_team" "teams" {
+  for_each = var.protected_reviewer_teams
+  slug     = each.value
 }
 
 ##########################################################################
@@ -99,17 +100,21 @@ data "github_team" "hmpps_dev_team" {
 resource "github_repository_environment" "env" {
   environment = var.environment
   repository  = var.github_repo
-  # Not working - waiting for Cloud Platforms to help me fix this
-  # prevent_self_review = true
   reviewers {
-    teams = [
-      tonumber(data.github_team.hmpps_dev_team.id)
-    ]
+    teams = [for team in github_team.teams : team.id]
   }
   deployment_branch_policy {
-    protected_branches     = true
-    custom_branch_policies = false
+    protected_branches     = length(var.selected_branch_patterns) > 0 ? false : var.protected_branches_only
+    custom_branch_policies = length(var.selected_branch_patterns) > 0 ? true : false
   }
+  prevent_self_review = var.prevent_self_review
+}
+
+resource "github_repository_environment_deployment_policy" "env" {
+  for_each       = toset(var.selected_branch_patterns)
+  repository     = var.github_repo
+  environment    = github_repository_environment.env.environment
+  branch_pattern = each.key
 }
 
 # The following environment variable is used by "hmpps-github-discovery" to map the application to a namespace.

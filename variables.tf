@@ -71,3 +71,31 @@ variable "source_template_repo" {
     error_message = "Valid values for source_template_repo are: hmpps-template-kotlin or hmpps-template-typescript."
   }
 }
+
+variable "protected_branches_only" {
+  description = "Whether to enabled deployments to this environment from protected branches only"
+  type        = bool
+  default     = true
+}
+
+variable "selected_branch_patterns" {
+  description = "A list of patterns to match against branch names for deployment policies"
+  type        = list(string)
+  default     = []
+}
+
+variable "reviewer_teams" {
+  description = "The GitHub team(s) that will be added as reviewers for deploying to this environment."
+  type        = list(string)
+  default     = []
+  validation {
+    condition     = is_production == "true" ? length(var.reviewer_teams) > 0 : true
+    error_message = "Reviewer teams must be specified for production environments."
+  }
+}
+
+variable "prevent_self_review" {
+  description = "Whether to prevent self-review of deployments to this environment"
+  type        = bool
+  default     = false
+}
