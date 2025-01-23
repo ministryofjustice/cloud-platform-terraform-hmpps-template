@@ -24,25 +24,30 @@ application = module.hmpps_template_typescript.application
 ## Usage
 
 ```hcl
-module "template" {
-  source = "github.com/ministryofjustice/cloud-platform-terraform-template?ref=version" # use the latest release
-
-  # Configuration
-  github_repo                   = "hmpps-template-typescript"
-  application                   = "hmpps-template-typescript"
+module "dev_env" {
+  source = "github.com/ministryofjustice/cloud-platform-terraform-template?ref=x.x.x" # use the latest release
+  github_repo                   = "hmpps-template-kotlin"
+  application                   = "hmpps-template-kotlin"
   github_team                   = "hmpps-sre"
-  environment                   = var.environment # Should match names in helm files.
-  application_insights_instance = "dev" # Either "dev", "preprod" or "prod"
-  source_template_repo          = "hmpps-template-typescript"
-  namespace                     = var.namespace
-  github_token                  = var.github_token
-  kubernetes_cluster            = var.kubernetes_cluster
-  application                   = var.application
+  environment                   = var.environment # Should match environment name used in helm values file e.g. values-dev.yaml
+  reviewer_teams                = ["hmpps-dev-team-1", "hmpps-dev-team-2"]
+  selected_branch_patterns      = ["main", "release/*", "feature/*"]
   is_production                 = var.is_production
+  application_insights_instance = "dev" # Either "dev", "preprod" or "prod"
+  source_template_repo          = "hmpps-template-kotlin"
+  github_token                  = var.github_token
+  namespace                     = var.namespace
+  kubernetes_cluster            = var.kubernetes_cluster
 }
 ```
 
 See the [examples/](examples/) folder for more information.
+
+Notes: 
+- `reviewer_teams` is mandatory for production environment (is_production = "true")
+- `selected_branch_patterns` is an optional parameter, must contain a list of patterns.
+- If `selected_branch_patterns` is not set, then the default is to enable `protected_branches_only`. This means you can only deploy to this environment from branches that have protection enabled.
+- You can set `protected_branches_only = false` - but this has to be done consciously and for good reason.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
