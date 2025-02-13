@@ -127,7 +127,7 @@ resource "github_repository_environment_deployment_policy" "env" {
 # The following environment variable is used by "hmpps-github-discovery" to map the application to a namespace.
 resource "github_actions_environment_variable" "namespace_env_var" {
   repository    = var.github_repo
-  environment   = var.environment
+  environment   = github_repository_environment.env.environment
   variable_name = "KUBE_NAMESPACE"
   value         = var.namespace
 }
