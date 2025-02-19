@@ -91,6 +91,7 @@ Notes:
 | [kubernetes_secret.typescript_client_creds](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
 | [random_password.session_secret](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [time_rotating.weekly](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating) | resource |
+| [aws_ssm_parameter.application_insights_id](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.application_insights_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
 | [github_team.teams](https://registry.terraform.io/providers/integrations/github/latest/docs/data-sources/team) | data source |
 
