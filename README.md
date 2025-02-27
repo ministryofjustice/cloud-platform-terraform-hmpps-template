@@ -48,6 +48,19 @@ Notes:
 - `selected_branch_patterns` is an optional parameter, must contain a list of patterns.
 - If `selected_branch_patterns` is not set, then the default is to enable `protected_branches_only`. This means you can only deploy to this environment from branches that have protection enabled.
 - You can set `protected_branches_only = false` - but this has to be done consciously and for good reason.
+- Github provider (in `main.tf`) and required provider (in `versions.tf`) must be defined when you call the module:
+```
+provider "github" {
+  token = var.github_token
+  owner = var.github_owner
+}
+```
+```
+github = {
+  source  = "integrations/github"
+  version = "~> 6.5.0"
+}
+```
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
