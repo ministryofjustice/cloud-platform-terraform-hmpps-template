@@ -28,6 +28,7 @@ locals {
         "batch",
         "networking.k8s.io",
         "policy",
+        "autoscaling",
       ]
       resources = [
         "deployments",
@@ -36,7 +37,8 @@ locals {
         "jobs",
         "replicasets",
         "poddisruptionbudgets",
-        "networkpolicies"
+        "networkpolicies",
+        "horizontalpodautoscalers"
       ]
       verbs = [
         "get",
