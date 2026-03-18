@@ -38,7 +38,8 @@ locals {
         "replicasets",
         "poddisruptionbudgets",
         "networkpolicies",
-        "horizontalpodautoscalers"
+        "horizontalpodautoscalers",
+        "statefulsets"
       ]
       verbs = [
         "get",
