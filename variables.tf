@@ -95,3 +95,15 @@ variable "prevent_self_review" {
   type        = bool
   default     = false
 }
+
+variable "force_rotate_token" {
+  description = "Boolean to force rotation of the service account token. Defaults to false."
+  type        = bool
+  default     = false
+}
+
+variable "custom_token_rotation_date" {
+  description = "Custom value for serviceaccount_token_rotated_date. Defaults to empty string."
+  type        = string
+  default     = ""
+}
