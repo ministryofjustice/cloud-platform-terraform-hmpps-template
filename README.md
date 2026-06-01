@@ -38,7 +38,53 @@ module "dev_env" {
   github_token                  = var.github_token
   namespace                     = var.namespace
   kubernetes_cluster            = var.kubernetes_cluster
+  enable_egress_controls        = true
 }
+```
+
+## Egress Controls
+
+When `enable_egress_controls = true`, this module will create:
+- Calico `NetworkPolicy` resources for DNS egress, Envoy proxy routing, Envoy upstream HTTPS egress, and a default deny egress rule.
+- A Kubernetes `ConfigMap`, `Deployment`, and `Service` for an Envoy forward proxy named `<application>-envoy-https-proxy` (by default).
+- A Kubernetes `Secret` with proxy env vars (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`) for application pods.
+
+The implementation uses native Kubernetes manifests/resources (not Helm).
+
+Notes:
+- These resources require Calico CRDs (`projectcalico.org/v3`) to be installed in the cluster.
+- The default DNS IP/CIDR is `10.100.0.10/32`; override `cluster_dns_ip_cidr` if your cluster uses a different DNS service IP.
+- Envoy approved host allow-lists are controlled with `envoy_allowed_hosts_exact` and `envoy_allowed_hosts_suffixes`.
+
+For hmpps-template-kotlin and hmpps-template-typescript Helm deployments, wire the proxy secret through `namespace_secrets`:
+
+```yaml
+namespace_secrets:
+  <application>-envoy-https-proxy-env:
+    HTTP_PROXY: "HTTP_PROXY"
+    HTTPS_PROXY: "HTTPS_PROXY"
+    NO_PROXY: "NO_PROXY"
+```
+
+`JAVA_TOOL_OPTIONS` is intentionally not included in this secret because it is already managed by the base image/Helm values.
+
+You can override the approved host allow-lists, for example:
+
+```hcl
+envoy_allowed_hosts_exact = [
+  "sqs.eu-west-2.amazonaws.com",
+  "sts.eu-west-2.amazonaws.com",
+  "agent.azureserviceprofiler.net",
+  "api.github.com",
+  "my-service.example.com",
+]
+
+envoy_allowed_hosts_suffixes = [
+  ".in.applicationinsights.azure.com",
+  ".livediagnostics.monitor.azure.com",
+  ".service.justice.gov.uk",
+  ".example.com",
+]
 ```
 
 See the [examples/](examples/) folder for more information.
