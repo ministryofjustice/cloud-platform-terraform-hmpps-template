@@ -286,7 +286,7 @@ static_resources:
                 policies:
                   approved-hosts:
                     permissions:
-${indent(22, yamlencode(local.envoy_allowed_host_rbac_permissions))}
+                      ${indent(22, yamlencode(local.envoy_allowed_host_rbac_permissions))}
                     principals:
                     - any: true
           - name: envoy.filters.http.dynamic_forward_proxy
