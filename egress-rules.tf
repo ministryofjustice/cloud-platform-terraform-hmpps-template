@@ -195,7 +195,7 @@ locals {
 
 # Calico policies that enforce egress controls and allow the Envoy proxy path.
 resource "kubernetes_manifest" "calico_egress_policies" {
-  for_each = var.enable_egress_controls ? tomap(local.calico_egress_policies) : tomap({})
+  for_each = var.enable_egress_controls ? { for name, policy in local.calico_egress_policies : name => policy } : tomap({})
 
   manifest = each.value
 }
