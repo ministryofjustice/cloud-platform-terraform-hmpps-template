@@ -58,7 +58,7 @@ locals {
       apiVersion = "projectcalico.org/v3"
       kind       = "NetworkPolicy"
       metadata = {
-        name      = "deny-egress-order"
+        name      = "${var.application}-deny-egress-order"
         namespace = var.namespace
       }
       spec = {
@@ -78,7 +78,7 @@ locals {
       apiVersion = "projectcalico.org/v3"
       kind       = "NetworkPolicy"
       metadata = {
-        name      = "allow-envoy-https-proxy-upstream-egress"
+        name      = "${var.application}-allow-envoy-https-proxy-upstream-egress"
         namespace = var.namespace
       }
       spec = {
@@ -103,7 +103,7 @@ locals {
       apiVersion = "projectcalico.org/v3"
       kind       = "NetworkPolicy"
       metadata = {
-        name      = "allow-dns-egress"
+        name      = "${var.application}-allow-dns-egress"
         namespace = var.namespace
       }
       spec = {
@@ -136,7 +136,7 @@ locals {
       apiVersion = "projectcalico.org/v3"
       kind       = "NetworkPolicy"
       metadata = {
-        name      = "allow-kube-dns-coredns-kubedns"
+        name      = "${var.application}-allow-kube-dns-coredns-kubedns"
         namespace = var.namespace
       }
       spec = {
@@ -171,7 +171,7 @@ locals {
       apiVersion = "projectcalico.org/v3"
       kind       = "NetworkPolicy"
       metadata = {
-        name      = "allow-egress-envoy-https-proxy"
+        name      = "${var.application}-allow-egress-envoy-https-proxy"
         namespace = var.namespace
       }
       spec = {
