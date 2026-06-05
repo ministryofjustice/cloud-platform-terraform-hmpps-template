@@ -49,6 +49,7 @@ locals {
   envoy_proxy_full_name = "${var.application}-${var.envoy_proxy_name}"
   envoy_proxy_url       = "http://${local.envoy_proxy_full_name}.${var.namespace}.svc.cluster.local:${var.envoy_proxy_port}"
   envoy_proxy_no_proxy  = "127.0.0.1,localhost,.svc,.cluster.local"
+  envoy_java_proxy_tool_options = "-Dhttp.proxyHost=${local.envoy_proxy_full_name} -Dhttp.proxyPort=${var.envoy_proxy_port} -Dhttps.proxyHost=${local.envoy_proxy_full_name} -Dhttps.proxyPort=${var.envoy_proxy_port} -Dhttp.nonProxyHosts=localhost|127.*|*.svc|*.cluster.local -Dhttps.nonProxyHosts=localhost|127.*|*.svc|*.cluster.local"
   vpc_egress_cidr_blocks = distinct(concat(
     [for subnet in data.aws_subnet.private : subnet.cidr_block],
     [for subnet in data.aws_subnet.eks_private : subnet.cidr_block]
@@ -624,8 +625,12 @@ resource "kubernetes_secret" "envoy_https_proxy_env" {
   }
 
   data = {
-    HTTP_PROXY  = local.envoy_proxy_url
-    HTTPS_PROXY = local.envoy_proxy_url
-    NO_PROXY    = local.envoy_proxy_no_proxy
+    HTTP_PROXY              = local.envoy_proxy_url
+    HTTPS_PROXY             = local.envoy_proxy_url
+    NO_PROXY                = local.envoy_proxy_no_proxy
+    http_proxy              = local.envoy_proxy_url
+    https_proxy             = local.envoy_proxy_url
+    no_proxy                = local.envoy_proxy_no_proxy
+    JAVA_PROXY_TOOL_OPTIONS = local.envoy_java_proxy_tool_options
   }
 }
