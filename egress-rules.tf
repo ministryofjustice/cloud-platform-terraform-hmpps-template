@@ -1,5 +1,5 @@
 data "aws_vpc" "selected" {
-  count = var.enable_egress_controls && var.allow_vpc_egress ? 1 : 0
+  count = var.enable_egress_controls ? 1 : 0
 
   filter {
     name   = "tag:Name"
@@ -8,7 +8,7 @@ data "aws_vpc" "selected" {
 }
 
 data "aws_subnets" "private" {
-  count = var.enable_egress_controls && var.allow_vpc_egress ? 1 : 0
+  count = var.enable_egress_controls ? 1 : 0
 
   filter {
     name   = "vpc-id"
@@ -21,13 +21,13 @@ data "aws_subnets" "private" {
 }
 
 data "aws_subnet" "private" {
-  for_each = var.enable_egress_controls && var.allow_vpc_egress ? toset(data.aws_subnets.private[0].ids) : toset([])
+  for_each = var.enable_egress_controls ? toset(data.aws_subnets.private[0].ids) : toset([])
 
   id = each.value
 }
 
 data "aws_subnets" "eks_private" {
-  count = var.enable_egress_controls && var.allow_vpc_egress ? 1 : 0
+  count = var.enable_egress_controls ? 1 : 0
 
   filter {
     name   = "vpc-id"
@@ -40,7 +40,7 @@ data "aws_subnets" "eks_private" {
 }
 
 data "aws_subnet" "eks_private" {
-  for_each = var.enable_egress_controls && var.allow_vpc_egress ? toset(data.aws_subnets.eks_private[0].ids) : toset([])
+  for_each = var.enable_egress_controls ? toset(data.aws_subnets.eks_private[0].ids) : toset([])
 
   id = each.value
 }
@@ -217,6 +217,29 @@ locals {
       }
     }
 
+    # Allows pods to communicate with other pods in the same namespace.
+    allow-pod-to-pod-same-namespace-egress = {
+      apiVersion = "projectcalico.org/v3"
+      kind       = "NetworkPolicy"
+      metadata = {
+        name      = "${var.application}-allow-pod-to-pod-same-namespace-egress"
+        namespace = var.namespace
+      }
+      spec = {
+        order    = 30.0
+        selector = "all()"
+        egress = [
+          {
+            action = "Allow"
+            destination = {
+              selector = "all()"
+            }
+          }
+        ]
+        types = ["Egress"]
+      }
+    }
+
     # Allows pods to send HTTPS traffic to the Envoy proxy service.
     allow-egress-envoy-https-proxy = {
       apiVersion = "projectcalico.org/v3"
@@ -241,7 +264,7 @@ locals {
         types = ["Egress"]
       }
     }
-    }, var.allow_vpc_egress && length(local.vpc_egress_cidr_blocks) > 0 ? {
+    }, length(local.vpc_egress_cidr_blocks) > 0 ? {
     # Allows all pods to directly access private VPC address ranges (RDS and ElastiCache ports).
     allow-vpc-egress = {
       apiVersion = "projectcalico.org/v3"

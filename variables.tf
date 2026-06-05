@@ -10,14 +10,8 @@ variable "enable_egress_controls" {
   default     = false
 }
 
-variable "allow_vpc_egress" {
-  description = "Whether to allow direct egress to private and EKS-private subnet CIDRs in the target VPC"
-  type        = bool
-  default     = false
-}
-
 variable "vpc_name" {
-  description = "VPC Name tag value used to look up private and EKS-private subnet CIDRs when allow_vpc_egress is enabled"
+  description = "VPC Name tag used to look up private and EKS-private subnet CIDRs for VPC egress policies"
   type        = string
 }
 

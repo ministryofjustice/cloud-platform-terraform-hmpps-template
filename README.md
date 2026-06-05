@@ -39,15 +39,14 @@ module "dev_env" {
   namespace                     = var.namespace
   kubernetes_cluster            = var.kubernetes_cluster
   enable_egress_controls        = true
-  allow_vpc_egress              = true
-  vpc_name                      = var.vpc_name
+  vpc_name                      = "live-1"
 }
 ```
 
 ## Egress Controls
 
 When `enable_egress_controls = true`, this module will create:
-- Calico `NetworkPolicy` resources for DNS egress, Envoy proxy routing, Envoy upstream HTTPS egress, and a default deny egress rule.
+- Calico `NetworkPolicy` resources for DNS egress, pod-to-pod egress within the namespace, Envoy proxy routing, Envoy upstream HTTPS egress, VPC egress for RDS/Redis ports, and a default deny egress rule.
 - A Kubernetes `ConfigMap`, `Deployment`, and `Service` for an Envoy forward proxy named `<application>-envoy-https-proxy` (by default).
 - A Kubernetes `Secret` with proxy env vars (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`) for application pods.
 
@@ -56,7 +55,7 @@ The implementation uses native Kubernetes manifests/resources (not Helm).
 Notes:
 - These resources require Calico CRDs (`projectcalico.org/v3`) to be installed in the cluster.
 - Envoy approved host allow-lists are controlled with `envoy_default_allowed_hosts_exact` and `envoy_default_allowed_hosts_suffixes`. Use `envoy_extra_allowed_hosts_exact` and `envoy_extra_allowed_hosts_suffixes` to append additional hosts without replacing the defaults.
-- To allow direct access to VPC services (for example RDS on port 5432 and ElastiCache Redis on port 6379), set `allow_vpc_egress = true` and provide `vpc_name`. The module will resolve `Private` and `EKS-Private` subnet CIDRs and allow egress to those ranges on the specified ports.
+- When `enable_egress_controls = true`, VPC egress is automatically allowed to private and EKS-private subnet CIDRs on ports 5432 (RDS) and 6379 (ElastiCache Redis). Set `vpc_name` to the VPC Name tag for subnet discovery.
 
 For hmpps-template-kotlin and hmpps-template-typescript Helm deployments, wire the proxy secret through `namespace_secrets`:
 
@@ -153,8 +152,13 @@ github = {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+<<<<<<< Updated upstream
 | <a name="input_allow_vpc_egress"></a> [allow\_vpc\_egress](#input\_allow\_vpc\_egress) | Whether to allow direct egress to private and EKS-private subnet CIDRs in the target VPC | `bool` | `false` | no |
 | <a name="input_application"></a> [application](#input\_application) | Application name | `string` | n/a | yes |
+=======
+| <a name="input_application"></a> [application](#input\_application) | Application name | `string` | n/a | yes |
+
+>>>>>>> Stashed changes
 | <a name="input_application_insights_instance"></a> [application\_insights\_instance](#input\_application\_insights\_instance) | Determines which instrumentation key to use for Application Insights. | `string` | `"dev"` | no |
 | <a name="input_custom_token_rotation_date"></a> [custom\_token\_rotation\_date](#input\_custom\_token\_rotation\_date) | Custom value for serviceaccount\_token\_rotated\_date. Defaults to empty string. | `string` | `""` | no |
 | <a name="input_enable_egress_controls"></a> [enable\_egress\_controls](#input\_enable\_egress\_controls) | Whether to create Calico egress policies and an Envoy HTTPS proxy deployment | `bool` | `false` | no |
@@ -183,7 +187,11 @@ github = {
 | <a name="input_reviewer_teams"></a> [reviewer\_teams](#input\_reviewer\_teams) | The GitHub team(s) that will be added as reviewers for deploying to this environment. | `list(string)` | `[]` | no |
 | <a name="input_selected_branch_patterns"></a> [selected\_branch\_patterns](#input\_selected\_branch\_patterns) | A list of patterns to match against branch names for deployment policies | `list(string)` | `[]` | no |
 | <a name="input_source_template_repo"></a> [source\_template\_repo](#input\_source\_template\_repo) | The source template repository used for this app. | `any` | n/a | yes |
+<<<<<<< Updated upstream
 | <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | VPC Name tag value used to look up private and EKS-private subnet CIDRs when allow\_vpc\_egress is enabled | `string` | n/a | yes |
+=======
+| <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | VPC Name tag used to look up private and EKS-private subnet CIDRs for VPC egress policies | `string` | `""` | no |
+>>>>>>> Stashed changes
 
 ## Outputs
 
