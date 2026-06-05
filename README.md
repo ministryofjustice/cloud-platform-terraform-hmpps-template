@@ -152,13 +152,7 @@ github = {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-<<<<<<< Updated upstream
-| <a name="input_allow_vpc_egress"></a> [allow\_vpc\_egress](#input\_allow\_vpc\_egress) | Whether to allow direct egress to private and EKS-private subnet CIDRs in the target VPC | `bool` | `false` | no |
 | <a name="input_application"></a> [application](#input\_application) | Application name | `string` | n/a | yes |
-=======
-| <a name="input_application"></a> [application](#input\_application) | Application name | `string` | n/a | yes |
-
->>>>>>> Stashed changes
 | <a name="input_application_insights_instance"></a> [application\_insights\_instance](#input\_application\_insights\_instance) | Determines which instrumentation key to use for Application Insights. | `string` | `"dev"` | no |
 | <a name="input_custom_token_rotation_date"></a> [custom\_token\_rotation\_date](#input\_custom\_token\_rotation\_date) | Custom value for serviceaccount\_token\_rotated\_date. Defaults to empty string. | `string` | `""` | no |
 | <a name="input_enable_egress_controls"></a> [enable\_egress\_controls](#input\_enable\_egress\_controls) | Whether to create Calico egress policies and an Envoy HTTPS proxy deployment | `bool` | `false` | no |
@@ -187,11 +181,7 @@ github = {
 | <a name="input_reviewer_teams"></a> [reviewer\_teams](#input\_reviewer\_teams) | The GitHub team(s) that will be added as reviewers for deploying to this environment. | `list(string)` | `[]` | no |
 | <a name="input_selected_branch_patterns"></a> [selected\_branch\_patterns](#input\_selected\_branch\_patterns) | A list of patterns to match against branch names for deployment policies | `list(string)` | `[]` | no |
 | <a name="input_source_template_repo"></a> [source\_template\_repo](#input\_source\_template\_repo) | The source template repository used for this app. | `any` | n/a | yes |
-<<<<<<< Updated upstream
-| <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | VPC Name tag value used to look up private and EKS-private subnet CIDRs when allow\_vpc\_egress is enabled | `string` | n/a | yes |
-=======
-| <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | VPC Name tag used to look up private and EKS-private subnet CIDRs for VPC egress policies | `string` | `""` | no |
->>>>>>> Stashed changes
+| <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | VPC Name tag used to look up private and EKS-private subnet CIDRs for VPC egress policies | `string` | n/a | yes |
 
 ## Outputs
 
