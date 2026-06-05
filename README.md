@@ -64,6 +64,9 @@ namespace_secrets:
     HTTP_PROXY: "HTTP_PROXY"
     HTTPS_PROXY: "HTTPS_PROXY"
     NO_PROXY: "NO_PROXY"
+    http_proxy: "HTTP_PROXY"
+    https_proxy: "HTTPS_PROXY"
+    no_proxy: "NO_PROXY"
 ```
 
 `JAVA_TOOL_OPTIONS` is intentionally not included in this secret because it is already managed by the base image/Helm values.
