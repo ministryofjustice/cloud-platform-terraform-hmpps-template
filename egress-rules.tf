@@ -11,7 +11,7 @@ locals {
 
   envoy_allowed_host_rbac_permissions = concat(
     flatten([
-      for host in distinct(var.envoy_allowed_hosts_exact) : [
+      for host in distinct(concat(var.envoy_default_allowed_hosts_exact, var.envoy_extra_allowed_hosts_exact)) : [
         {
           header = {
             name = ":authority"
@@ -31,7 +31,7 @@ locals {
       ]
     ]),
     flatten([
-      for suffix in distinct(var.envoy_allowed_hosts_suffixes) : [
+      for suffix in distinct(concat(var.envoy_default_allowed_hosts_suffixes, var.envoy_extra_allowed_hosts_suffixes)) : [
         {
           header = {
             name = ":authority"
@@ -114,7 +114,7 @@ locals {
             action   = "Allow"
             protocol = "UDP"
             destination = {
-              nets  = [var.cluster_dns_ip_cidr]
+              nets  = ["10.100.0.10/32"]
               ports = [53]
             }
           },
@@ -122,7 +122,7 @@ locals {
             action   = "Allow"
             protocol = "TCP"
             destination = {
-              nets  = [var.cluster_dns_ip_cidr]
+              nets  = ["10.100.0.10/32"]
               ports = [53]
             }
           }
@@ -351,6 +351,9 @@ resource "kubernetes_deployment" "envoy_https_proxy" {
     template {
       metadata {
         labels = local.envoy_labels
+        annotations = {
+          "checksum/envoy-config" = sha256(kubernetes_config_map.envoy_https_proxy[0].data["envoy.yaml"])
+        }
       }
 
       spec {

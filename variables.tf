@@ -10,12 +10,6 @@ variable "enable_egress_controls" {
   default     = false
 }
 
-variable "cluster_dns_ip_cidr" {
-  description = "Cluster DNS service IP/CIDR used for direct DNS egress policy rules"
-  type        = string
-  default     = "10.100.0.10/32"
-}
-
 variable "envoy_proxy_name" {
   description = "Base name used for the Envoy proxy resource suffix and app.kubernetes.io/name label"
   type        = string
@@ -58,7 +52,7 @@ variable "envoy_connect_timeout" {
   default     = "10s"
 }
 
-variable "envoy_allowed_hosts_exact" {
+variable "envoy_default_allowed_hosts_exact" {
   description = "Approved exact hostnames to allow through the Envoy proxy"
   type        = list(string)
   default = [
@@ -68,13 +62,13 @@ variable "envoy_allowed_hosts_exact" {
   ]
   validation {
     condition = alltrue([
-      for host in var.envoy_allowed_hosts_exact : can(regex("^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*$", host))
+      for host in var.envoy_default_allowed_hosts_exact : can(regex("^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*$", host))
     ])
-    error_message = "envoy_allowed_hosts_exact values must be DNS hostnames only (no scheme, path, wildcard, or port)."
+    error_message = "envoy_default_allowed_hosts_exact values must be DNS hostnames only (no scheme, path, wildcard, or port)."
   }
 }
 
-variable "envoy_allowed_hosts_suffixes" {
+variable "envoy_default_allowed_hosts_suffixes" {
   description = "Approved hostname suffixes to allow through the Envoy proxy"
   type        = list(string)
   default = [
@@ -84,9 +78,33 @@ variable "envoy_allowed_hosts_suffixes" {
   ]
   validation {
     condition = alltrue([
-      for suffix in var.envoy_allowed_hosts_suffixes : can(regex("^\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*$", suffix))
+      for suffix in var.envoy_default_allowed_hosts_suffixes : can(regex("^\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*$", suffix))
     ])
-    error_message = "envoy_allowed_hosts_suffixes values must start with '.' and contain a valid DNS suffix (for example '.example.com')."
+    error_message = "envoy_default_allowed_hosts_suffixes values must start with '.' and contain a valid DNS suffix (for example '.example.com')."
+  }
+}
+
+variable "envoy_extra_allowed_hosts_exact" {
+  description = "Additional exact hostnames to allow through the Envoy proxy, merged with the default list in envoy_default_allowed_hosts_exact"
+  type        = list(string)
+  default     = []
+  validation {
+    condition = alltrue([
+      for host in var.envoy_extra_allowed_hosts_exact : can(regex("^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*$", host))
+    ])
+    error_message = "envoy_extra_allowed_hosts_exact values must be DNS hostnames only (no scheme, path, wildcard, or port)."
+  }
+}
+
+variable "envoy_extra_allowed_hosts_suffixes" {
+  description = "Additional hostname suffixes to allow through the Envoy proxy, merged with the default list in envoy_default_allowed_hosts_suffixes"
+  type        = list(string)
+  default     = []
+  validation {
+    condition = alltrue([
+      for suffix in var.envoy_extra_allowed_hosts_suffixes : can(regex("^\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*$", suffix))
+    ])
+    error_message = "envoy_extra_allowed_hosts_suffixes values must start with '.' and contain a valid DNS suffix (for example '.example.com')."
   }
 }
 

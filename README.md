@@ -53,8 +53,7 @@ The implementation uses native Kubernetes manifests/resources (not Helm).
 
 Notes:
 - These resources require Calico CRDs (`projectcalico.org/v3`) to be installed in the cluster.
-- The default DNS IP/CIDR is `10.100.0.10/32`; override `cluster_dns_ip_cidr` if your cluster uses a different DNS service IP.
-- Envoy approved host allow-lists are controlled with `envoy_allowed_hosts_exact` and `envoy_allowed_hosts_suffixes`.
+- Envoy approved host allow-lists are controlled with `envoy_default_allowed_hosts_exact` and `envoy_default_allowed_hosts_suffixes`. Use `envoy_extra_allowed_hosts_exact` and `envoy_extra_allowed_hosts_suffixes` to append additional hosts without replacing the defaults.
 
 For hmpps-template-kotlin and hmpps-template-typescript Helm deployments, wire the proxy secret through `namespace_secrets`:
 
@@ -67,27 +66,6 @@ namespace_secrets:
     http_proxy: "HTTP_PROXY"
     https_proxy: "HTTPS_PROXY"
     no_proxy: "NO_PROXY"
-```
-
-`JAVA_TOOL_OPTIONS` is intentionally not included in this secret because it is already managed by the base image/Helm values.
-
-You can override the approved host allow-lists, for example:
-
-```hcl
-envoy_allowed_hosts_exact = [
-  "sqs.eu-west-2.amazonaws.com",
-  "sts.eu-west-2.amazonaws.com",
-  "agent.azureserviceprofiler.net",
-  "api.github.com",
-  "my-service.example.com",
-]
-
-envoy_allowed_hosts_suffixes = [
-  ".in.applicationinsights.azure.com",
-  ".livediagnostics.monitor.azure.com",
-  ".service.justice.gov.uk",
-  ".example.com",
-]
 ```
 
 See the [examples/](examples/) folder for more information.
@@ -173,8 +151,8 @@ github = {
 | <a name="input_custom_token_rotation_date"></a> [custom\_token\_rotation\_date](#input\_custom\_token\_rotation\_date) | Custom value for serviceaccount\_token\_rotated\_date. Defaults to empty string. | `string` | `""` | no |
 | <a name="input_enable_egress_controls"></a> [enable\_egress\_controls](#input\_enable\_egress\_controls) | Whether to create Calico egress policies and an Envoy HTTPS proxy deployment | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment name - must match environment names used in helm files. | `string` | n/a | yes |
-| <a name="input_envoy_allowed_hosts_exact"></a> [envoy\_allowed\_hosts\_exact](#input\_envoy\_allowed\_hosts\_exact) | Approved exact hostnames to allow through the Envoy proxy | `list(string)` | <pre>[<br/>  "sqs.eu-west-2.amazonaws.com",<br/>  "sts.eu-west-2.amazonaws.com",<br/>  "agent.azureserviceprofiler.net"<br/>]</pre> | no |
-| <a name="input_envoy_allowed_hosts_suffixes"></a> [envoy\_allowed\_hosts\_suffixes](#input\_envoy\_allowed\_hosts\_suffixes) | Approved hostname suffixes to allow through the Envoy proxy | `list(string)` | <pre>[<br/>  ".in.applicationinsights.azure.com",<br/>  ".livediagnostics.monitor.azure.com",<br/>  ".service.justice.gov.uk"<br/>]</pre> | no |
+| <a name="input_envoy_default_allowed_hosts_exact"></a> [envoy\_default\_allowed\_hosts\_exact](#input\_envoy\_default\_allowed\_hosts\_exact) | Approved exact hostnames to allow through the Envoy proxy | `list(string)` | <pre>[<br/>  "sqs.eu-west-2.amazonaws.com",<br/>  "sts.eu-west-2.amazonaws.com",<br/>  "agent.azureserviceprofiler.net"<br/>]</pre> | no |
+| <a name="input_envoy_default_allowed_hosts_suffixes"></a> [envoy\_default\_allowed\_hosts\_suffixes](#input\_envoy\_default\_allowed\_hosts\_suffixes) | Approved hostname suffixes to allow through the Envoy proxy | `list(string)` | <pre>[<br/>  ".in.applicationinsights.azure.com",<br/>  ".livediagnostics.monitor.azure.com",<br/>  ".service.justice.gov.uk"<br/>]</pre> | no |
 | <a name="input_envoy_connect_timeout"></a> [envoy\_connect\_timeout](#input\_envoy\_connect\_timeout) | Upstream connect timeout for the dynamic forward proxy cluster | `string` | `"10s"` | no |
 | <a name="input_envoy_dns_host_ttl"></a> [envoy\_dns\_host\_ttl](#input\_envoy\_dns\_host\_ttl) | TTL used for cached DNS hosts in Envoy | `string` | `"60s"` | no |
 | <a name="input_envoy_image"></a> [envoy\_image](#input\_envoy\_image) | Container image for the Envoy proxy | `string` | `"envoyproxy/envoy:v1.38-latest"` | no |
