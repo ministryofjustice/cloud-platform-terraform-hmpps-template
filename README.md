@@ -38,7 +38,36 @@ module "dev_env" {
   github_token                  = var.github_token
   namespace                     = var.namespace
   kubernetes_cluster            = var.kubernetes_cluster
+  enable_egress_controls        = true
+  vpc_name                      = "live-1"
 }
+```
+
+## Egress Controls
+
+When `enable_egress_controls = true`, this module will create:
+- Calico `NetworkPolicy` resources for DNS egress, pod-to-pod egress within the namespace, Envoy proxy routing, Envoy upstream HTTPS egress, VPC egress for RDS/Redis ports, and a default deny egress rule.
+- A Kubernetes `ConfigMap`, `Deployment`, and `Service` for an Envoy forward proxy named `<application>-envoy-https-proxy` (by default).
+- A Kubernetes `Secret` with proxy env vars (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`) for application pods.
+
+The implementation uses native Kubernetes manifests/resources (not Helm).
+
+Notes:
+- These resources require Calico CRDs (`projectcalico.org/v3`) to be installed in the cluster.
+- Envoy approved host allow-lists are controlled with `envoy_default_allowed_hosts_exact` and `envoy_default_allowed_hosts_suffixes`. Use `envoy_extra_allowed_hosts_exact` and `envoy_extra_allowed_hosts_suffixes` to append additional hosts without replacing the defaults.
+- When `enable_egress_controls = true`, VPC egress is automatically allowed to private and EKS-private subnet CIDRs on ports 5432 (RDS) and 6379 (ElastiCache Redis). Set `vpc_name` to the VPC Name tag for subnet discovery.
+
+For hmpps-template-kotlin and hmpps-template-typescript Helm deployments, wire the proxy secret through `namespace_secrets`:
+
+```yaml
+namespace_secrets:
+  <application>-envoy-https-proxy-env:
+    HTTP_PROXY: "HTTP_PROXY"
+    HTTPS_PROXY: "HTTPS_PROXY"
+    NO_PROXY: "NO_PROXY"
+    http_proxy: "HTTP_PROXY"
+    https_proxy: "HTTPS_PROXY"
+    no_proxy: "NO_PROXY"
 ```
 
 See the [examples/](examples/) folder for more information.
@@ -97,15 +126,26 @@ github = {
 | [github_actions_environment_variable.namespace_env_var](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/actions_environment_variable) | resource |
 | [github_repository_environment.env](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_environment) | resource |
 | [github_repository_environment_deployment_policy.env](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_environment_deployment_policy) | resource |
+| [kubernetes_config_map.envoy_https_proxy](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map) | resource |
+| [kubernetes_deployment.envoy_https_proxy](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/deployment) | resource |
+| [kubernetes_manifest.calico_egress_policies](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
+| [kubernetes_pod_disruption_budget_v1.envoy_https_proxy](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/pod_disruption_budget_v1) | resource |
 | [kubernetes_secret.application-insights](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
+| [kubernetes_secret.envoy_https_proxy_env](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
 | [kubernetes_secret.kotlin_client_creds](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
 | [kubernetes_secret.session_secret](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
 | [kubernetes_secret.typescript_auth_code](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
 | [kubernetes_secret.typescript_client_creds](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
+| [kubernetes_service.envoy_https_proxy](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
 | [random_password.session_secret](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [time_rotating.weekly](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating) | resource |
 | [aws_ssm_parameter.application_insights_id](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.application_insights_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
+| [aws_subnet.eks_private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
+| [aws_subnet.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
+| [aws_subnets.eks_private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnets) | data source |
+| [aws_subnets.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnets) | data source |
+| [aws_vpc.selected](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
 | [github_team.teams](https://registry.terraform.io/providers/integrations/github/latest/docs/data-sources/team) | data source |
 
 ## Inputs
@@ -115,7 +155,19 @@ github = {
 | <a name="input_application"></a> [application](#input\_application) | Application name | `string` | n/a | yes |
 | <a name="input_application_insights_instance"></a> [application\_insights\_instance](#input\_application\_insights\_instance) | Determines which instrumentation key to use for Application Insights. | `string` | `"dev"` | no |
 | <a name="input_custom_token_rotation_date"></a> [custom\_token\_rotation\_date](#input\_custom\_token\_rotation\_date) | Custom value for serviceaccount\_token\_rotated\_date. Defaults to empty string. | `string` | `""` | no |
+| <a name="input_enable_egress_controls"></a> [enable\_egress\_controls](#input\_enable\_egress\_controls) | Whether to create Calico egress policies and an Envoy HTTPS proxy deployment | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment name - must match environment names used in helm files. | `string` | n/a | yes |
+| <a name="input_envoy_connect_timeout"></a> [envoy\_connect\_timeout](#input\_envoy\_connect\_timeout) | Upstream connect timeout for the dynamic forward proxy cluster | `string` | `"10s"` | no |
+| <a name="input_envoy_default_allowed_hosts_exact"></a> [envoy\_default\_allowed\_hosts\_exact](#input\_envoy\_default\_allowed\_hosts\_exact) | Approved exact hostnames to allow through the Envoy proxy | `list(string)` | <pre>[<br/>  "sqs.eu-west-2.amazonaws.com",<br/>  "sts.eu-west-2.amazonaws.com",<br/>  "agent.azureserviceprofiler.net"<br/>]</pre> | no |
+| <a name="input_envoy_default_allowed_hosts_suffixes"></a> [envoy\_default\_allowed\_hosts\_suffixes](#input\_envoy\_default\_allowed\_hosts\_suffixes) | Approved hostname suffixes to allow through the Envoy proxy | `list(string)` | <pre>[<br/>  ".in.applicationinsights.azure.com",<br/>  ".livediagnostics.monitor.azure.com",<br/>  ".service.justice.gov.uk"<br/>]</pre> | no |
+| <a name="input_envoy_dns_host_ttl"></a> [envoy\_dns\_host\_ttl](#input\_envoy\_dns\_host\_ttl) | TTL used for cached DNS hosts in Envoy | `string` | `"60s"` | no |
+| <a name="input_envoy_extra_allowed_hosts_exact"></a> [envoy\_extra\_allowed\_hosts\_exact](#input\_envoy\_extra\_allowed\_hosts\_exact) | Additional exact hostnames to allow through the Envoy proxy, merged with the default list in envoy\_default\_allowed\_hosts\_exact | `list(string)` | `[]` | no |
+| <a name="input_envoy_extra_allowed_hosts_suffixes"></a> [envoy\_extra\_allowed\_hosts\_suffixes](#input\_envoy\_extra\_allowed\_hosts\_suffixes) | Additional hostname suffixes to allow through the Envoy proxy, merged with the default list in envoy\_default\_allowed\_hosts\_suffixes | `list(string)` | `[]` | no |
+| <a name="input_envoy_image"></a> [envoy\_image](#input\_envoy\_image) | Container image for the Envoy proxy | `string` | `"envoyproxy/envoy:v1.38-latest"` | no |
+| <a name="input_envoy_log_level"></a> [envoy\_log\_level](#input\_envoy\_log\_level) | Envoy runtime log level | `string` | `"info"` | no |
+| <a name="input_envoy_proxy_name"></a> [envoy\_proxy\_name](#input\_envoy\_proxy\_name) | Base name used for the Envoy proxy resource suffix and app.kubernetes.io/name label | `string` | `"envoy-https-proxy"` | no |
+| <a name="input_envoy_proxy_port"></a> [envoy\_proxy\_port](#input\_envoy\_proxy\_port) | Envoy forward proxy listening port | `number` | `3128` | no |
+| <a name="input_envoy_proxy_replicas"></a> [envoy\_proxy\_replicas](#input\_envoy\_proxy\_replicas) | Number of Envoy proxy replicas | `number` | `2` | no |
 | <a name="input_force_rotate_token"></a> [force\_rotate\_token](#input\_force\_rotate\_token) | Boolean to force rotation of the service account token. Defaults to false. | `bool` | `false` | no |
 | <a name="input_github_owner"></a> [github\_owner](#input\_github\_owner) | The GitHub organization or individual user account containing the app's code repo. Used by the Github Terraform provider. See: https://user-guide.cloud-platform.service.justice.gov.uk/documentation/getting-started/ecr-setup.html#accessing-the-credentials | `string` | `"ministryofjustice"` | no |
 | <a name="input_github_repo"></a> [github\_repo](#input\_github\_repo) | The name of the GitHub repository where the source code for the app is stored | `any` | n/a | yes |
@@ -129,12 +181,14 @@ github = {
 | <a name="input_reviewer_teams"></a> [reviewer\_teams](#input\_reviewer\_teams) | The GitHub team(s) that will be added as reviewers for deploying to this environment. | `list(string)` | `[]` | no |
 | <a name="input_selected_branch_patterns"></a> [selected\_branch\_patterns](#input\_selected\_branch\_patterns) | A list of patterns to match against branch names for deployment policies | `list(string)` | `[]` | no |
 | <a name="input_source_template_repo"></a> [source\_template\_repo](#input\_source\_template\_repo) | The source template repository used for this app. | `any` | n/a | yes |
+| <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | VPC Name tag used to look up private and EKS-private subnet CIDRs for VPC egress policies | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_application"></a> [application](#output\_application) | The name of the application (can be used in dependent modules/resources.) |
+| <a name="output_envoy_proxy_env_secret_name"></a> [envoy\_proxy\_env\_secret\_name](#output\_envoy\_proxy\_env\_secret\_name) | The name of the Kubernetes secret containing Envoy proxy env vars |
 <!-- END_TF_DOCS -->
 
 ## Tags
