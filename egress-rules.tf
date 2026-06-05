@@ -1,7 +1,58 @@
+data "aws_vpc" "selected" {
+  count = var.enable_egress_controls && var.allow_vpc_egress ? 1 : 0
+
+  filter {
+    name   = "tag:Name"
+    values = [var.vpc_name]
+  }
+}
+
+data "aws_subnets" "private" {
+  count = var.enable_egress_controls && var.allow_vpc_egress ? 1 : 0
+
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.selected[0].id]
+  }
+
+  tags = {
+    SubnetType = "Private"
+  }
+}
+
+data "aws_subnet" "private" {
+  for_each = var.enable_egress_controls && var.allow_vpc_egress ? toset(data.aws_subnets.private[0].ids) : toset([])
+
+  id = each.value
+}
+
+data "aws_subnets" "eks_private" {
+  count = var.enable_egress_controls && var.allow_vpc_egress ? 1 : 0
+
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.selected[0].id]
+  }
+
+  tags = {
+    SubnetType = "EKS-Private"
+  }
+}
+
+data "aws_subnet" "eks_private" {
+  for_each = var.enable_egress_controls && var.allow_vpc_egress ? toset(data.aws_subnets.eks_private[0].ids) : toset([])
+
+  id = each.value
+}
+
 locals {
   envoy_proxy_full_name = "${var.application}-${var.envoy_proxy_name}"
   envoy_proxy_url       = "http://${local.envoy_proxy_full_name}.${var.namespace}.svc.cluster.local:${var.envoy_proxy_port}"
   envoy_proxy_no_proxy  = "127.0.0.1,localhost,.svc,.cluster.local"
+  vpc_egress_cidr_blocks = distinct(concat(
+    [for subnet in data.aws_subnet.private : subnet.cidr_block],
+    [for subnet in data.aws_subnet.eks_private : subnet.cidr_block]
+  ))
 
   envoy_labels = {
     app                          = local.envoy_proxy_full_name
@@ -52,7 +103,7 @@ locals {
     ])
   )
 
-  calico_egress_policies = {
+  calico_egress_policies = merge({
     # Default deny for egress once the allow rules below are in place.
     deny-egress-order = {
       apiVersion = "projectcalico.org/v3"
@@ -190,7 +241,40 @@ locals {
         types = ["Egress"]
       }
     }
-  }
+    }, var.allow_vpc_egress && length(local.vpc_egress_cidr_blocks) > 0 ? {
+    # Allows all pods to directly access private VPC address ranges (RDS and ElastiCache ports).
+    allow-vpc-egress = {
+      apiVersion = "projectcalico.org/v3"
+      kind       = "NetworkPolicy"
+      metadata = {
+        name      = "${var.application}-allow-vpc-egress"
+        namespace = var.namespace
+      }
+      spec = {
+        order    = 35.0
+        selector = "all()"
+        egress = [
+          {
+            action   = "Allow"
+            protocol = "TCP"
+            destination = {
+              nets  = local.vpc_egress_cidr_blocks
+              ports = [5432]
+            }
+          },
+          {
+            action   = "Allow"
+            protocol = "TCP"
+            destination = {
+              nets  = local.vpc_egress_cidr_blocks
+              ports = [6379]
+            }
+          }
+        ]
+        types = ["Egress"]
+      }
+    }
+  } : {})
 }
 
 # Calico policies that enforce egress controls and allow the Envoy proxy path.

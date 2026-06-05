@@ -10,6 +10,17 @@ variable "enable_egress_controls" {
   default     = false
 }
 
+variable "allow_vpc_egress" {
+  description = "Whether to allow direct egress to private and EKS-private subnet CIDRs in the target VPC"
+  type        = bool
+  default     = false
+}
+
+variable "vpc_name" {
+  description = "VPC Name tag value used to look up private and EKS-private subnet CIDRs when allow_vpc_egress is enabled"
+  type        = string
+}
+
 variable "envoy_proxy_name" {
   description = "Base name used for the Envoy proxy resource suffix and app.kubernetes.io/name label"
   type        = string
