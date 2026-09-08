@@ -10,6 +10,7 @@ locals {
         "services",
         "configmaps",
         "pods",
+        "persistentvolumeclaims"
       ]
       verbs = [
         "patch",
