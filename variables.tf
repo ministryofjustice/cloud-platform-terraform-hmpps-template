@@ -107,3 +107,13 @@ variable "custom_token_rotation_date" {
   type        = string
   default     = ""
 }
+
+variable "github_actions_sa_rules_override" {
+  description = "Override the default serviceaccount_rules used for the github actions service account. If left as null, the module's default rules are used."
+  type = list(object({
+    api_groups = list(string)
+    resources  = list(string)
+    verbs      = list(string)
+  }))
+  default = null
+}
