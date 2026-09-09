@@ -64,6 +64,9 @@ locals {
       ]
     },
   ]
+
+  # Use the caller-supplied rules if provided, otherwise fall back to the defaults above
+  github-actions-sa_rules_final = coalesce(var.github_actions_sa_rules_override, local.github-actions-sa_rules)
 }
 
 # Service account used by github actions
@@ -78,7 +81,7 @@ module "service_account" {
   github_actions_secret_kube_token     = "KUBE_TOKEN"
   github_actions_secret_kube_cluster   = "KUBE_CLUSTER"
   github_actions_secret_kube_namespace = "KUBE_NAMESPACE"
-  serviceaccount_rules                 = local.github-actions-sa_rules
+  serviceaccount_rules                 = local.github-actions-sa_rules_final
   serviceaccount_token_rotated_date    = var.force_rotate_token ? var.custom_token_rotation_date : time_rotating.weekly.unix
   role_name                            = "${var.application}-github-actions-sa"
   rolebinding_name                     = "${var.application}-github-actions-sa"
