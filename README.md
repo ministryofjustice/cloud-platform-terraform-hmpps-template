@@ -12,6 +12,7 @@ It will setup the following required resources:
 - Setup Azure Applications Insights instrumentation key, saved to a Kubernetes secret.
 - Setup sessions secret (for typescript apps),saved to a Kubernetes secret.
 - Setup empty client credentials for hmpps-auth integration, saved to a Kubernetes secret.
+- Optionally (`enable_ecr = true`) create an ECR repository with GitHub OIDC access, and set the `CLOUD_PLATFORM_ECR_REGISTRY_URL` GitHub Actions repository variable.
 
 **NOTE**: this module does not setup other resources such as RDS/S3/ElastiCache/SQS/SNS - these need to be configured on a per need basis within the cloud-platform-environments repo.
 
@@ -48,6 +49,7 @@ Notes:
 - `selected_branch_patterns` is an optional parameter, must contain a list of patterns.
 - If `selected_branch_patterns` is not set, then the default is to enable `protected_branches_only`. This means you can only deploy to this environment from branches that have protection enabled.
 - You can set `protected_branches_only = false` - but this has to be done consciously and for good reason.
+- To create an ECR repository, set `enable_ecr = true`. The repository is named `<team_name>/<ecr_repo_name>`; `team_name` defaults to `hmpps`, `business_unit` to `HMPPS` and `infrastructure_support` to `hmpps-sre`. Only enable this in one Cloud Platform environment (usually dev), as the ECR repository and its repository-level GitHub variables are shared across all environments. Optional: `ecr_repo_name` (defaults to `application`), `ecr_github_actions_prefix`, `ecr_deletion_protection` (default `true`), `ecr_enable_irsa` (default `false`).
 - Github provider (in `main.tf`) and required provider (in `versions.tf`) must be defined when you call the module in your namespace:
 ```
 provider "github" {
