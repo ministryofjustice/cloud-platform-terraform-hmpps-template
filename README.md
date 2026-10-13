@@ -90,6 +90,7 @@ github = {
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_ecr"></a> [ecr](#module\_ecr) | github.com/ministryofjustice/cloud-platform-terraform-ecr-credentials | 8.0.2 |
 | <a name="module_service_account"></a> [service\_account](#module\_service\_account) | github.com/ministryofjustice/cloud-platform-terraform-serviceaccount | 1.1.0 |
 
 ## Resources
@@ -97,6 +98,7 @@ github = {
 | Name | Type |
 |------|------|
 | [github_actions_environment_variable.namespace_env_var](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/actions_environment_variable) | resource |
+| [github_actions_variable.ecr_registry](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/actions_variable) | resource |
 | [github_repository_environment.env](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_environment) | resource |
 | [github_repository_environment_deployment_policy.env](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_environment_deployment_policy) | resource |
 | [kubernetes_secret.application-insights](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret) | resource |
@@ -116,7 +118,13 @@ github = {
 |------|-------------|------|---------|:--------:|
 | <a name="input_application"></a> [application](#input\_application) | Application name | `string` | n/a | yes |
 | <a name="input_application_insights_instance"></a> [application\_insights\_instance](#input\_application\_insights\_instance) | Determines which instrumentation key to use for Application Insights. | `string` | `"dev"` | no |
+| <a name="input_business_unit"></a> [business\_unit](#input\_business\_unit) | Area of the MOJ responsible for the service. Used for ECR tags. | `string` | `"HMPPS"` | no |
 | <a name="input_custom_token_rotation_date"></a> [custom\_token\_rotation\_date](#input\_custom\_token\_rotation\_date) | Custom value for serviceaccount\_token\_rotated\_date. Defaults to empty string. | `string` | `""` | no |
+| <a name="input_ecr_deletion_protection"></a> [ecr\_deletion\_protection](#input\_ecr\_deletion\_protection) | Whether the ECR repository should have deletion protection enabled. | `bool` | `true` | no |
+| <a name="input_ecr_enable_irsa"></a> [ecr\_enable\_irsa](#input\_ecr\_enable\_irsa) | Whether to create IRSA resources for ECR read-only access. | `bool` | `false` | no |
+| <a name="input_ecr_github_actions_prefix"></a> [ecr\_github\_actions\_prefix](#input\_ecr\_github\_actions\_prefix) | String prefix for the GitHub Actions variables and secrets created by the ECR module. | `string` | `""` | no |
+| <a name="input_ecr_repo_name"></a> [ecr\_repo\_name](#input\_ecr\_repo\_name) | Name of the ECR repository. Defaults to the application name. | `string` | `null` | no |
+| <a name="input_enable_ecr"></a> [enable\_ecr](#input\_enable\_ecr) | Whether to create an ECR repository (with GitHub OIDC access) for this application. Typically only enabled for one environment. | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment name - must match environment names used in helm files. | `string` | n/a | yes |
 | <a name="input_force_rotate_token"></a> [force\_rotate\_token](#input\_force\_rotate\_token) | Boolean to force rotation of the service account token. Defaults to false. | `bool` | `false` | no |
 | <a name="input_github_actions_sa_rules_override"></a> [github\_actions\_sa\_rules\_override](#input\_github\_actions\_sa\_rules\_override) | Override the default serviceaccount\_rules used for the github actions service account. If left as null, the module's default rules are used. | <pre>list(object({<br/>    api_groups = list(string)<br/>    resources  = list(string)<br/>    verbs      = list(string)<br/>  }))</pre> | `null` | no |
@@ -124,6 +132,7 @@ github = {
 | <a name="input_github_repo"></a> [github\_repo](#input\_github\_repo) | The name of the GitHub repository where the source code for the app is stored | `any` | n/a | yes |
 | <a name="input_github_team"></a> [github\_team](#input\_github\_team) | The name of the GitHub team that will be added as reviewers to the repository | `any` | n/a | yes |
 | <a name="input_github_token"></a> [github\_token](#input\_github\_token) | Required by the GitHub Terraform provider | `string` | n/a | yes |
+| <a name="input_infrastructure_support"></a> [infrastructure\_support](#input\_infrastructure\_support) | The team responsible for managing the infrastructure. Used for ECR tags. | `string` | `"hmpps-sre"` | no |
 | <a name="input_is_production"></a> [is\_production](#input\_is\_production) | Whether this is used for production or not | `string` | n/a | yes |
 | <a name="input_kubernetes_cluster"></a> [kubernetes\_cluster](#input\_kubernetes\_cluster) | The name of the Kubernetes cluster | `string` | n/a | yes |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Namespace name | `string` | n/a | yes |
@@ -132,12 +141,15 @@ github = {
 | <a name="input_reviewer_teams"></a> [reviewer\_teams](#input\_reviewer\_teams) | The GitHub team(s) that will be added as reviewers for deploying to this environment. | `list(string)` | `[]` | no |
 | <a name="input_selected_branch_patterns"></a> [selected\_branch\_patterns](#input\_selected\_branch\_patterns) | A list of patterns to match against branch names for deployment policies | `list(string)` | `[]` | no |
 | <a name="input_source_template_repo"></a> [source\_template\_repo](#input\_source\_template\_repo) | The source template repository used for this app. | `any` | n/a | yes |
+| <a name="input_team_name"></a> [team\_name](#input\_team\_name) | Team name. Used for the ECR owner tag and as the ECR repository name prefix (<team\_name>/<repo\_name>). | `string` | `"hmpps"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_application"></a> [application](#output\_application) | The name of the application (can be used in dependent modules/resources.) |
+| <a name="output_ecr_irsa_policy_arn"></a> [ecr\_irsa\_policy\_arn](#output\_ecr\_irsa\_policy\_arn) | ECR IRSA policy ARN (null if enable\_ecr is false or ecr\_enable\_irsa is false) |
+| <a name="output_ecr_repo_url"></a> [ecr\_repo\_url](#output\_ecr\_repo\_url) | ECR repository URL (null if enable\_ecr is false) |
 <!-- END_TF_DOCS -->
 
 ## Tags
