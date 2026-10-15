@@ -108,6 +108,57 @@ variable "custom_token_rotation_date" {
   default     = ""
 }
 
+#######
+# ECR #
+#######
+variable "enable_ecr" {
+  description = "Whether to create an ECR repository (with GitHub OIDC access) for this application. Typically only enabled for one environment."
+  type        = bool
+  default     = false
+}
+
+variable "ecr_repo_name" {
+  description = "Name of the ECR repository. Defaults to the application name."
+  type        = string
+  default     = null
+}
+
+variable "ecr_github_actions_prefix" {
+  description = "String prefix for the GitHub Actions variables and secrets created by the ECR module."
+  type        = string
+  default     = ""
+}
+
+variable "ecr_deletion_protection" {
+  description = "Whether the ECR repository should have deletion protection enabled."
+  type        = bool
+  default     = true
+}
+
+variable "ecr_enable_irsa" {
+  description = "Whether to create IRSA resources for ECR read-only access."
+  type        = bool
+  default     = false
+}
+
+variable "business_unit" {
+  description = "Area of the MOJ responsible for the service. Used for ECR tags."
+  type        = string
+  default     = "HMPPS"
+}
+
+variable "team_name" {
+  description = "Team name. Used for the ECR owner tag and as the ECR repository name prefix (<team_name>/<repo_name>)."
+  type        = string
+  default     = "hmpps"
+}
+
+variable "infrastructure_support" {
+  description = "The team responsible for managing the infrastructure. Used for ECR tags."
+  type        = string
+  default     = "hmpps-sre"
+}
+
 variable "github_actions_sa_rules_override" {
   description = "Override the default serviceaccount_rules used for the github actions service account. If left as null, the module's default rules are used."
   type = list(object({
